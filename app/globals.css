@@ -1,0 +1,151 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0a0a0f;
+  --color-surface: #111118;
+  --color-surface2: #1a1a24;
+  --color-border: rgba(255, 255, 255, 0.06);
+  --color-border-hover: rgba(255, 255, 255, 0.1);
+  --color-fg: #f0f0f8;
+  --color-muted: #6b6b80;
+  --color-accent: #7c6af7;
+  --color-accent-dim: rgba(124, 106, 247, 0.13);
+  --color-accent-hover: #9585ff;
+  --color-smooth: #22c55e;
+  --color-limited: #f59e0b;
+
+  --font-family-sans: "Space Grotesk", sans-serif;
+  --font-family-mono: "JetBrains Mono", monospace;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+html,
+body {
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-family-sans);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* Spinner ring on scan/loading circles */
+.spin-ring::before {
+  content: "";
+  position: absolute;
+  inset: -1.5px;
+  border-radius: 9999px;
+  border: 1.5px solid var(--color-accent);
+  border-top-color: transparent;
+  animation: spin 1s linear infinite;
+}
+.spin-ring-amber::before {
+  content: "";
+  position: absolute;
+  inset: -1.5px;
+  border-radius: 9999px;
+  border: 1.5px solid var(--color-limited);
+  border-top-color: transparent;
+  animation: spin 1s linear infinite;
+}
+
+/* Gradient text for hero title em */
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-accent) 0%, #b388ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Game card hover lift */
+.card-hover {
+  transition:
+    border-color 0.15s,
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+.card-hover:hover {
+  border-color: var(--color-border-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* Saved panel slide-in */
+.panel-slide {
+  animation: slideDown 0.2s ease;
+}
+
+/* Pulse aura behind scan ring */
+.scan-aura {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Webkit line clamp helper */
+.clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.game-cover-pattern {
+  position: absolute;
+  inset: 0;
+  opacity: 0.15;
+}
+
+.game-cover-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 10px 12px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.65));
+}
+
+.game-cover-genre {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.game-cover {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.game-cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
