@@ -30,9 +30,10 @@ Each game must have:
 - developer: developer name
 - coverColor: a hex color that fits the game's vibe (e.g. "#1a1a2e")
 - minReqs: { cpu: string, ram: number (GB), gpu: string, vram: number (MB) }
-- performance: "smooth" if runs at 60+ FPS ultra settings, or "limited" if runs well at medium/lower settings or 30-60fps
-- performanceNote: short note in Portuguese explaining performance (max 12 words), e.g. "Roda em ultra 60fps com folga" or "Melhor em médio/alto, 45-60fps"
 - tags: array of 2-3 short tags in Portuguese like ["Mundo aberto", "Multijogador", "Cooperativo"]
+
+DO NOT include performance or FPS estimation.
+Only return game info and minimum requirements.
 
 Mix popular and indie games. Vary genres. Be accurate about requirements.`;
 

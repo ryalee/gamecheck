@@ -4,6 +4,7 @@ import GameCard from "../components/GameCard";
 import SpecCard from "../components/SpecCard";
 import GameDetails from "../components/GameDetails";
 import { useState } from "react";
+import SearchBar from "../components/SearchBar";
 
 interface Props {
   specs: Specs;
@@ -58,11 +59,14 @@ export default function ResultsView({
         />
       </div>
 
+      {/* input para busca de algum jogo específico */}
+      <SearchBar specs={specs} games={games} />
+
       {/* filtros */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <span className="font-mono text-muted px-5">
+      <div className="flex flex-wrap items-center px-6 justify-between gap-3">
+        <span className="font-mono text-muted">
           <p className="text-[#f5f5f5] font-semibold text-xl">
-            Melhores opções
+            Recomendações rápidas
           </p>
           <p className="text-sm">{games.length} jogos encontrados</p>
         </span>
@@ -86,21 +90,23 @@ export default function ResultsView({
       </div>
 
       {/* grid de jogos */}
-      <div className="grid grid-cols-4 gap-6">
+      <div className="grid grid-cols-4 gap-10 place-items-center">
         {filteredGames.map((game) => (
           <GameCard
             key={game.id}
             game={game}
             saved={savedIds.has(game.id)}
             onSave={() => onToggleSave(game)}
-            onClick={setSelectedGame} // 👈 abre modal
+            onClick={setSelectedGame}
           />
         ))}
       </div>
 
-      {/* 🔥 MODAL FORA DO GRID */}
       {selectedGame && (
-        <GameDetails game={selectedGame} onClose={() => setSelectedGame(null)} />
+        <GameDetails
+          game={selectedGame}
+          onClose={() => setSelectedGame(null)}
+        />
       )}
     </div>
   );

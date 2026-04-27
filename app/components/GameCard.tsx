@@ -13,23 +13,25 @@ export default function GameCard({ game, saved, onSave, onClick }: Props) {
   const isSmooth = game.performance === "smooth";
 
   return (
-    <div 
+    <div
       onClick={() => onClick(game)}
-      className="card-hover flex flex-col overflow-hidden rounded-xl border border-border bg-surface w-[80%]"
+      className="card-hover flex flex-col overflow-hidden rounded-xl border border-border bg-surface w-[80%] cursor-pointer"
     >
       <GameCover game={game} />
 
       <div className="flex flex-1 flex-col gap-3 p-3">
-        {/* Title row */}
+        {/* header */}
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
             <h3 className="overflow-hidden text-ellipsis whitespace-nowrap text-sm font-semibold tracking-tight text-fg">
               {game.title}
             </h3>
+
             <span className="mt-0.5 block text-[11px] text-muted">
               {game.developer} · {game.year}
             </span>
           </div>
+
           <button
             onClick={onSave}
             title={saved ? "Remover" : "Salvar"}
@@ -44,12 +46,12 @@ export default function GameCard({ game, saved, onSave, onClick }: Props) {
           </button>
         </div>
 
-        {/* Description */}
+        {/* descrição */}
         <p className="clamp-2 text-[12px] leading-[1.55] text-muted">
           {game.description}
         </p>
 
-        {/* Performance badge */}
+        {/* performance */}
         <div
           className={`flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] font-medium leading-snug
           ${
@@ -62,7 +64,7 @@ export default function GameCard({ game, saved, onSave, onClick }: Props) {
           <span>{game.performanceNote}</span>
         </div>
 
-        {/* Tags */}
+        {/* tags */}
         <div className="mt-auto flex flex-wrap gap-1">
           {game.tags.map((tag) => (
             <span
