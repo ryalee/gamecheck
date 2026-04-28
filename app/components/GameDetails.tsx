@@ -1,3 +1,4 @@
+import { div } from "framer-motion/client";
 import { Game } from "../types";
 
 interface Props {
@@ -67,14 +68,43 @@ export default function GameDetails({ game, onClose }: Props) {
         </div>
 
         {/* botão */}
-        {game.storeUrl && (
-          <a
-            href={game.storeUrl}
-            target="_blank"
-            className="block w-full text-center bg-purple-600 hover:bg-purple-700 transition py-2 rounded-lg font-medium"
-          >
-            Ver na loja
-          </a>
+        {game.stores && (
+          <div className="flex flex-col items-center">
+            <div className="flex gap-2 justify-center text-center w-full">
+              <a
+                href={game.stores.nuuvem}
+                target="_blank"
+                className="bg-[#089fcf] p-3 font-semibold w-[35%] items-center gap-2 rounded-md flex"
+              >
+                <img src="/nuuvem.webp" alt="ver na Nuuvem" className="w-12.5 h-12.5"/>
+                <p className="text-sm">Ver na Nuuvem</p>
+              </a>
+
+              <a
+                href={game.stores.steam}
+                target="_blank"
+                className="bg-[#1f2941] p-3 font-semibold w-[35%] items-center gap-2 rounded-md flex"
+              >
+                <img src="/steam.webp" alt="ver na Steam" className="w-12.5 h-12.5"/>
+                <p className="text-sm">Ver na Steam</p>
+              </a>
+
+              <a
+                href={game.stores.epic}
+                target="_blank"
+                className="bg-[#363435] p-2 font-semibold w-[35%] items-center gap-2 rounded-md flex"
+              >
+                <img src="/epic-games.webp" alt="ver na Epic Games" className="w-12.5 h-12.5"/>
+                <p className="text-sm">Ver na Epic Games</p>
+              </a>
+            </div>
+
+            <p className="text-xs text-muted text-center mt-4">
+              ⚠️ <span className="font-bold">Aviso:</span> pode ser que{" "}
+              {game.title} não esteja disponível nessas lojas. Recomendamos que
+              pesquise manualmente para evitar possiveis erros.
+            </p>
+          </div>
         )}
       </div>
     </div>

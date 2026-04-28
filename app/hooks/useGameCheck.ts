@@ -104,7 +104,7 @@ export function useGameCheck() {
     (g) => filter === "all" || g.performance === filter,
   );
 
-  setGames(gamesWithPerf);
+  // setGames(gamesWithPerf);
 
   return {
     state,

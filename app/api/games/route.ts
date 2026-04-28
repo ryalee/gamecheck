@@ -81,13 +81,19 @@ Mix popular and indie games. Vary genres. Be accurate about requirements.`;
     const games = JSON.parse(jsonMatch[0]);
 
     const gamesWithStore = games.map((game: any) => {
-      const slug = game.title.toLowerCase().replace(/[^a-z0-9]+/g, "_");
+      const title = game.title;
 
       return {
         ...game,
-        storeUrl: `https://store.steampowered.com/search/?term=${encodeURIComponent(game.title)}`,
+        stores: {
+          nuuvem: `https://www.nuuvem.com/br-pt/catalog/search/${encodeURIComponent(title)}`,
+          steam: `https://store.steampowered.com/search/?term=${encodeURIComponent(title)}`,
+          epic: `https://store.epicgames.com/pt-BR/browse?q=${encodeURIComponent(title)}`,
+          gog: `https://www.gog.com/en/games?query=${encodeURIComponent(title)}`,
+        },
       };
     });
+    
     return NextResponse.json({ success: true, games: gamesWithStore });
   } catch (error) {
     console.error("Error fetching games:", error);

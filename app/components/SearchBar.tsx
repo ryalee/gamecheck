@@ -47,15 +47,15 @@ export default function GameSearch({ specs, games }: any) {
 
   return (
     <div className="mb-8">
-      <div className="flex gap-2">
+      <div className="flex gap-2 w-[90%] self-center mx-auto">
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Digite um jogo..."
-          className="flex-1 px-4 py-2 bg-surface border border-border rounded-lg"
+          className="flex-1 p-4 bg-surface border border-border rounded-lg focus:outline-0"
         />
 
-        <button onClick={handleSearch} className="bg-accent px-4 rounded-lg">
+        <button onClick={handleSearch} className="bg-accent px-4 rounded-lg cursor-pointer hover:bg-accent-hover transition-all duration-300">
           Buscar
         </button>
       </div>
@@ -63,7 +63,7 @@ export default function GameSearch({ specs, games }: any) {
       {loading && <p className="mt-2 text-sm">Analisando...</p>}
 
       {result && (
-        <div className="mt-4 p-4 border border-border rounded-lg bg-surface">
+        <div className="mt-4 p-4 border border-border rounded-lg bg-surface w-[60%] mx-auto">
           <h3 className="font-bold">{result.title}</h3>
 
           <p>
