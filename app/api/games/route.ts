@@ -30,10 +30,10 @@ Each game must have:
 - developer: developer name
 - coverColor: a hex color that fits the game's vibe (e.g. "#1a1a2e")
 - minReqs: { cpu: string, ram: number (GB), gpu: string, vram: number (MB) }
+- performance: "smooth" if runs at 60+ FPS on high/ultra settings, or "limited" if requires medium/low settings or gets 30-60fps
+- performanceNote: short note in Portuguese explaining performance (max 12 words), e.g. "Roda em ultra 60fps com folga" or "Melhor em médio/alto, 45-60fps"
 - tags: array of 2-3 short tags in Portuguese like ["Mundo aberto", "Multijogador", "Cooperativo"]
 
-DO NOT include performance or FPS estimation.
-Only return game info and minimum requirements.
 
 Mix popular and indie games. Vary genres. Be accurate about requirements.`;
 
@@ -46,7 +46,7 @@ Mix popular and indie games. Vary genres. Be accurate about requirements.`;
           Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
         },
         body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
+          model: "llama-3.1-8b-instant",
           max_tokens: 4000,
           messages: [
             {
@@ -60,11 +60,11 @@ Mix popular and indie games. Vary genres. Be accurate about requirements.`;
 
     const data = await response.json();
 
-    const textContent = data.choices?.[0]?.message?.content || "";
-
     if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
+      throw new Error(`API error ${response.status}: ${JSON.stringify(data)}`);
     }
+
+    const textContent = data.choices?.[0]?.message?.content || "";
 
     // Clean and parse JSON
     const cleaned = textContent
@@ -93,7 +93,7 @@ Mix popular and indie games. Vary genres. Be accurate about requirements.`;
         },
       };
     });
-    
+
     return NextResponse.json({ success: true, games: gamesWithStore });
   } catch (error) {
     console.error("Error fetching games:", error);

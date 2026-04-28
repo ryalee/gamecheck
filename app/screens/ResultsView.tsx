@@ -5,6 +5,7 @@ import SpecCard from "../components/SpecCard";
 import GameDetails from "../components/GameDetails";
 import { useState } from "react";
 import SearchBar from "../components/SearchBar";
+import ErrorButton from "../components/ErrorButton";
 
 interface Props {
   specs: Specs;
@@ -108,6 +109,14 @@ export default function ResultsView({
           onClose={() => setSelectedGame(null)}
         />
       )}
+
+      <div className="py-6 px-10">
+        <p className="text-sm text-muted">
+          Encontrou um erro ou quer dar um feedback?
+        </p>
+
+        <ErrorButton />
+      </div>
     </div>
   );
 }
