@@ -26,6 +26,7 @@ export default function Header({
             alt="Logo"
             width={50}
             height={50}
+            className="w-auto h-auto"
           />
           <p className="text-xl">Tá Rodando?</p>
         </div>

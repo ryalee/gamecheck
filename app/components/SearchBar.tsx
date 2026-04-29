@@ -47,17 +47,27 @@ export default function GameSearch({ specs, games }: any) {
 
   return (
     <div className="mb-8">
-      <div className="flex gap-2 w-[90%] self-center mx-auto">
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Digite um jogo..."
-          className="flex-1 p-4 bg-surface border border-border rounded-lg focus:outline-0"
-        />
+      <div className="flex flex-col gap-2">
+        <div className="flex gap-2 w-[90%] self-center mx-auto">
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Digite um jogo..."
+            className="flex-1 p-4 bg-surface border border-border rounded-lg focus:outline-0"
+          />
 
-        <button onClick={handleSearch} className="bg-accent px-4 rounded-lg cursor-pointer hover:bg-accent-hover transition-all duration-300">
-          Buscar
-        </button>
+          <button
+            onClick={handleSearch}
+            className="bg-accent px-4 rounded-lg cursor-pointer hover:bg-accent-hover transition-all duration-300"
+          >
+            Buscar
+          </button>
+        </div>
+
+        <p className="text-sm text-muted mx-20 font-semibold">
+          Lembrando: podem ocorrer inúmeras variações, se mesmo assim houver
+          duvidas se roda ou não, considere testar.
+        </p>
       </div>
 
       {loading && <p className="mt-2 text-sm">Analisando...</p>}
@@ -72,7 +82,7 @@ export default function GameSearch({ specs, games }: any) {
               ? "🟢 Liso"
               : result.performance === "limited"
                 ? "🟠 Limitado"
-                : "🔴 Não roda"}
+                : "🔴 Nem tente"}
           </p>
 
           <p>{result.reason}</p>

@@ -1,3 +1,5 @@
+import ErrorButton from "../components/ErrorButton";
+
 interface Props {
   message: string;
   onRetry: () => void;

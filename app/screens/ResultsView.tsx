@@ -91,7 +91,7 @@ export default function ResultsView({
       </div>
 
       {/* grid de jogos */}
-      <div className="grid grid-cols-4 gap-10 place-items-center">
+      <div className="grid grid-cols-4 gap-10 place-items-center w-[95%] mx-auto">
         {filteredGames.map((game) => (
           <GameCard
             key={game.id}
@@ -112,7 +112,7 @@ export default function ResultsView({
 
       <div className="py-6 px-10">
         <p className="text-sm text-muted">
-          Encontrou um erro ou quer dar um feedback?
+          Encontrou um erro ou quer dar um feedback/sugestão?
         </p>
 
         <ErrorButton />

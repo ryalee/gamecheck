@@ -14,29 +14,28 @@ export async function POST(request: NextRequest) {
 
     const prompt = `You are a PC gaming expert. Based on the system specs below, suggest 12 games that run well on this machine.
 
-SYSTEM SPECS:
-- CPU: ${specs.cpu.brand} (${specs.cpu.cores} cores @ ${specs.cpu.speed}GHz)
-- RAM: ${specs.ram.total}GB
-- GPU: ${specs.gpu.model} (${specs.gpu.vram}MB VRAM)
-- OS: ${specs.os.distro || specs.os.platform}
+      SYSTEM SPECS:
+      - CPU: ${specs.cpu.brand} (${specs.cpu.cores} cores @ ${specs.cpu.speed}GHz)
+      - RAM: ${specs.ram.total}GB
+      - GPU: ${specs.gpu.model} (${specs.gpu.vram}MB VRAM)
+      - OS: ${specs.os.distro || specs.os.platform}
 
-Return ONLY a JSON array with exactly 12 games. No markdown, no explanation, just the raw JSON array.
-Each game must have:
-- id: unique string slug
-- title: game name
-- genre: genre (e.g. "Action RPG", "FPS", "Strategy")
-- year: release year (number)
-- description: 1-2 sentence description of the game (in Portuguese)
-- developer: developer name
-- coverColor: a hex color that fits the game's vibe (e.g. "#1a1a2e")
-- minReqs: { cpu: string, ram: number (GB), gpu: string, vram: number (MB) }
-- performance: "smooth" if runs at 60+ FPS on high/ultra settings, or "limited" if requires medium/low settings or gets 30-60fps
-- performanceNote: short note in Portuguese explaining performance (max 12 words), e.g. "Roda em ultra 60fps com folga" or "Melhor em médio/alto, 45-60fps"
-- tags: array of 2-3 short tags in Portuguese like ["Mundo aberto", "Multijogador", "Cooperativo"]
+      Return ONLY a JSON array with exactly 12 games. No markdown, no explanation, just the raw JSON array.
+      Each game must have:
+      - id: unique string slug
+      - title: game name
+      - genre: genre (e.g. "Action RPG", "FPS", "Strategy")
+      - year: release year (number)
+      - description: 1-2 sentence description of the game (in Portuguese)
+      - developer: developer name
+      - coverColor: a hex color that fits the game's vibe (e.g. "#1a1a2e")
+      - minReqs: { cpu: string, ram: number (GB), gpu: string, vram: number (MB) }
+      - performance: "smooth" if runs at 60+ FPS on high/ultra settings, or "limited" if requires medium/low settings or gets 30-60fps
+      - performanceNote: short note in Portuguese explaining performance (max 12 words), e.g. "Roda em ultra 60fps com folga" or "Melhor em médio/alto, 45-60fps"
+      - tags: array of 2-3 short tags in Portuguese like ["Mundo aberto", "Multijogador", "Cooperativo"]
+      - Intel UHD / Intel Iris / AMD Radeon Graphics (integrated): treat as having 1-2GB shared VRAM. Can run lightweight and older games fine.
 
-
-Mix popular and indie games. Vary genres. Be accurate about requirements.`;
-
+      Mix popular and indie games. Vary genres. Be accurate about requirements.`;
     const response = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
       {
@@ -48,6 +47,7 @@ Mix popular and indie games. Vary genres. Be accurate about requirements.`;
         body: JSON.stringify({
           model: "llama-3.1-8b-instant",
           max_tokens: 4000,
+          temperature: 0,
           messages: [
             {
               role: "user",
