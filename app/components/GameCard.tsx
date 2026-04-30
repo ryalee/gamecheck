@@ -4,12 +4,10 @@ import GameCover from "./GameCover";
 
 interface Props {
   game: Game;
-  saved: boolean;
-  onSave: () => void;
   onClick: (game: Game) => void;
 }
 
-export default function GameCard({ game, saved, onSave, onClick }: Props) {
+export default function GameCard({ game, onClick }: Props) {
   const isSmooth = game.performance === "smooth";
 
   return (
@@ -31,19 +29,6 @@ export default function GameCard({ game, saved, onSave, onClick }: Props) {
               {game.developer} · {game.year}
             </span>
           </div>
-
-          <button
-            onClick={onSave}
-            title={saved ? "Remover" : "Salvar"}
-            className={`flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-[7px] border transition-all
-              ${
-                saved
-                  ? "border-yellow-400/40 bg-yellow-400/8 text-yellow-400"
-                  : "border-border bg-transparent text-muted hover:border-border-hover hover:text-yellow-400"
-              }`}
-          >
-            <Star size={13} fill={saved ? "currentColor" : "none"} />
-          </button>
         </div>
 
         {/* descrição */}

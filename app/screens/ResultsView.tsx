@@ -12,9 +12,7 @@ interface Props {
   games: Game[];
   filteredGames: Game[];
   filter: FilterType;
-  savedIds: Set<string>;
   onFilterChange: (f: FilterType) => void;
-  onToggleSave: (game: Game) => void;
 }
 
 const FILTERS: { value: FilterType; label: string }[] = [
@@ -28,9 +26,7 @@ export default function ResultsView({
   games,
   filteredGames,
   filter,
-  savedIds,
   onFilterChange,
-  onToggleSave,
 }: Props) {
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
 
@@ -96,8 +92,6 @@ export default function ResultsView({
           <GameCard
             key={game.id}
             game={game}
-            saved={savedIds.has(game.id)}
-            onSave={() => onToggleSave(game)}
             onClick={setSelectedGame}
           />
         ))}

@@ -21,16 +21,6 @@ export function useGameCheck() {
   const [filter, setFilter] = useState<FilterType>("all");
   const [errorMsg, setErrorMsg] = useState("");
   const [scanStep, setScanStep] = useState(0);
-  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
-  const [savedGames, setSavedGames] = useState<Game[]>([]);
-
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) return;
-    const data: Game[] = JSON.parse(stored);
-    setSavedIds(new Set(data.map((g) => g.id)));
-    setSavedGames(data);
-  }, []);
 
   async function analyze() {
     setState("scanning");
@@ -85,26 +75,9 @@ export function useGameCheck() {
     setFilter("all");
   }
 
-  function toggleSave(game: Game) {
-    setSavedIds((prev) => {
-      const next = new Set(prev);
-      const nextGames = next.has(game.id)
-        ? savedGames.filter((g) => g.id !== game.id)
-        : [...savedGames, game];
-
-      next.has(game.id) ? next.delete(game.id) : next.add(game.id);
-
-      setSavedGames(nextGames);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(nextGames));
-      return next;
-    });
-  }
-
   const filteredGames = games.filter(
     (g) => filter === "all" || g.performance === filter,
   );
-
-  // setGames(gamesWithPerf);
 
   return {
     state,
@@ -116,10 +89,7 @@ export function useGameCheck() {
     errorMsg,
     scanStep,
     scanSteps: SCAN_STEPS,
-    savedIds,
-    savedGames,
     analyze,
     reset,
-    toggleSave,
   };
 }

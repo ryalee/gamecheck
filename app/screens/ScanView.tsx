@@ -16,7 +16,7 @@ export function ScanningView({ scanStep, scanSteps }: ScanningProps) {
 
       <p className="text-[15px] font-medium text-fg">{scanSteps[scanStep]}</p>
 
-      {/* Steps list */}
+      {/* steps list */}
       <div className="mt-2 flex flex-col gap-2">
         {scanSteps.map((step, i) => (
           <div key={step} className={`flex items-center gap-2 text-xs transition-colors duration-300 ${i <= scanStep ? 'text-fg' : 'text-muted'}`}>

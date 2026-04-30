@@ -3,10 +3,13 @@ import { getIgdbToken } from "../../lib/igdb-token";
 
 const cache = new Map<string, object>();
 
-async function fetchGameRequirements(title: string): Promise<string> {
+async function fetchGameRequirements(
+  title: string,
+): Promise<{ requirements: string; coverUrl: string | null }> {
   try {
     const token = await getIgdbToken();
 
+    // Busca requisitos e cover juntos
     const res = await fetch("https://api.igdb.com/v4/games", {
       method: "POST",
       headers: {
@@ -14,20 +17,38 @@ async function fetchGameRequirements(title: string): Promise<string> {
         Authorization: `Bearer ${token}`,
         "Content-Type": "text/plain",
       },
-      body: `search "${title}"; fields name, system_requirements.minimum, system_requirements.recommended; limit 1;`,
+      body: `search "${title}"; fields name, cover.url, system_requirements.minimum, system_requirements.recommended; limit 1;`,
     });
 
     const data = await res.json();
-    const reqs = data[0]?.system_requirements?.[0];
+    const game = data[0];
+    const reqs = game?.system_requirements?.[0];
 
-    if (!reqs)
-      return `No database requirements found for "${title}". Use your best knowledge.`;
+    // Cover URL do IGDB - transforma o formato "https://images.igdb.com/..."
+    const coverUrl = game?.cover?.url
+      ? game.cover.url
+          .replace("t_thumb", "t_cover_big_2x")
+          .replace("//", "https://")
+      : null;
 
-    return `REAL REQUIREMENTS FROM IGDB DATABASE:
+    if (!reqs) {
+      return {
+        requirements: `No database requirements found for "${title}". Use your best knowledge.`,
+        coverUrl,
+      };
+    }
+
+    return {
+      requirements: `REAL REQUIREMENTS FROM IGDB DATABASE:
 Minimum: ${reqs.minimum ?? "not listed"}
-Recommended: ${reqs.recommended ?? "not listed"}`;
+Recommended: ${reqs.recommended ?? "not listed"}`,
+      coverUrl,
+    };
   } catch {
-    return `Could not fetch requirements. Use your best knowledge of "${title}".`;
+    return {
+      requirements: `Could not fetch requirements. Use your best knowledge of "${title}".`,
+      coverUrl: null,
+    };
   }
 }
 
@@ -42,35 +63,41 @@ export async function POST(req: NextRequest) {
     const requirements = await fetchGameRequirements(title);
 
     const prompt = `
-You are a PC gaming performance expert.
+You are a PC gaming performance expert specializing in PC game compatibility analysis.
 
 GAME: "${title}"
 
-PC SPECS:
+PC HARDWARE SPECS:
 - CPU: ${specs.cpu.brand} (${specs.cpu.cores} cores @ ${specs.cpu.speed}GHz)
-- RAM: ${specs.ram.total}GB
-- GPU: ${specs.gpu.model} (VRAM: ${specs.gpu.vram}MB)
+- RAM: ${specs.ram.total}GB DDR${specs.ram.type ? specs.ram.type : "4"}
+- GPU: ${specs.gpu.model} (${specs.gpu.vram}MB VRAM)
+- OS: ${specs.os.platform} ${specs.os.distro || ""}
+- Storage: ${specs.disk.totalGB}GB available
 
 ${requirements}
 
-Compare the PC specs against the requirements above and give your verdict.
-
-RULES:
-- "smooth"     → PC meets or exceeds RECOMMENDED requirements (60fps+ on high/ultra)
-- "limited"    → PC meets MINIMUM but not recommended (30-60fps on low/medium)
-- "unplayable" → PC clearly fails MINIMUM requirements
-- For lightweight indie games (Terraria, Stardew Valley, Celeste, etc): almost always "smooth"
-- ${specs.gpu.vram}MB VRAM is a hard limit — if the game needs more, performance will suffer
-- Be realistic, not overly pessimistic or optimistic
-- Intel UHD / Intel Iris / AMD Radeon Graphics (integrated): treat as having 1-2GB shared VRAM. Can run lightweight and older games fine.
+ANALYSIS RULES:
+1. VRAM LIMIT: ${specs.gpu.vram}MB is a HARD limit. If game recommends more, expect reduced settings or frame drops.
+2. INTEGRATED GPU: Intel UHD/Iris/AMD Radeon Graphics = 1-2GB shared VRAM. Only handle lightweight/old games.
+3. MINIMUM vs RECOMMENDED:
+   - "smooth": Exceeds RECOMMENDED specs → 60fps+ high/ultra settings
+   - "limited": Meets MINIMUM but not RECOMMENDED → 30-60fps on low/medium, may need settings tuning
+   - "unplayable": Below MINIMUM → major frame drops, stuttering, or won't run
+4. GENRE CONSIDERATIONS:
+   - Indie/2D/Retro (Terraria, Stardew Valley, Celeste, Hollow Knight): almost always "smooth" even on weak hardware
+   - Strategy/Cards (Hearthstone, Civ VI, LoR): CPU-bound, usually "smooth"
+   - Esports (Valorant, CS2, League): highly optimized, "smooth" if meets min
+   - AAA/Open World (Spider-Man, RDR2, Cyberpunk): demands high specs, check both CPU AND GPU
+5. UPSCALING SUPPORT: If game supports DLSS/FSR/XeSS, a ${specs.gpu.vram}MB GPU can potentially run better than expected. Consider this for NVIDIA RTX, AMD Radeon RX 6000+, or Intel Arc.
+6. BOTTLENECK ANALYSIS: Identify if CPU, GPU, or RAM is the limiting factor.
 
 Return ONLY valid JSON:
 {
   "title": "${title}",
   "performance": "smooth" | "limited" | "unplayable",
-  "fpsEstimate": string,
-  "recommendedSettings": string,
-  "reason": string (in Portuguese, max 15 words, mention the bottleneck if any)
+  "fpsEstimate": "60fps+" | "45-60fps" | "30-45fps" | "<30fps",
+  "recommendedSettings": "Ultra/High" | "Medium" | "Low" | "Not recommended",
+  "reason": "Em Portuguese, max 12 palavras, cite o gargalo (CPU/GPU/RAM/VRAM)"
 }
 `;
 
@@ -98,8 +125,14 @@ Return ONLY valid JSON:
     if (!jsonMatch) throw new Error("No JSON found in response");
     const result = JSON.parse(jsonMatch[0]);
 
-    cache.set(cacheKey, result);
-    return NextResponse.json(result);
+    // Adiciona a URL da capa ao resultado
+    const resultWithCover = {
+      ...result,
+      coverUrl: requirements.coverUrl,
+    };
+
+    cache.set(cacheKey, resultWithCover);
+    return NextResponse.json(resultWithCover);
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "Erro na busca" }, { status: 500 });
