@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { AppState, FilterType, Game, Specs } from "../types";
-import { calculatePerformance } from "../lib/performance";
 
 const SCAN_STEPS = [
   "Lendo CPU...",
@@ -12,8 +11,6 @@ const SCAN_STEPS = [
   "Analisando configurações...",
 ];
 
-const STORAGE_KEY = "gamecheck-saved";
-
 export function useGameCheck() {
   const [state, setState] = useState<AppState>("idle");
   const [specs, setSpecs] = useState<Specs | null>(null);
@@ -21,24 +18,34 @@ export function useGameCheck() {
   const [filter, setFilter] = useState<FilterType>("all");
   const [errorMsg, setErrorMsg] = useState("");
   const [scanStep, setScanStep] = useState(0);
+  const [searchedGames, setSearchedGames] = useState<Game[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   async function analyze() {
     setState("scanning");
     setScanStep(0);
+    setErrorMsg("");
 
+    // animação fake (UX 🔥)
     for (let i = 0; i < SCAN_STEPS.length; i++) {
       setScanStep(i);
-      await new Promise((r) => setTimeout(r, 500));
+      await new Promise((r) => setTimeout(r, 400));
     }
 
     try {
+      // 🔍 pega specs
       const specsRes = await fetch("/api/specs");
       const specsData = await specsRes.json();
-      if (!specsData.success) throw new Error(specsData.error);
+
+      if (!specsData?.success || !specsData?.specs) {
+        throw new Error("Erro ao obter specs");
+      }
 
       setSpecs(specsData.specs);
       setState("loading");
 
+      // 🎮 pega jogos
       const gamesRes = await fetch("/api/games", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -46,26 +53,58 @@ export function useGameCheck() {
       });
 
       const gamesData = await gamesRes.json();
-      if (!gamesData.success) throw new Error(gamesData.error);
 
-      const gamesWithPerf = gamesData.games.map((game: any) => {
-        const perf = calculatePerformance(game, specsData.specs);
+      if (!gamesData?.success) {
+        throw new Error(gamesData?.error || "Erro ao buscar jogos");
+      }
 
-        return {
-          ...game,
-          performance: perf.performance,
-          performanceNote: perf.performanceNote,
-        };
-        
-      });
-      
-      setGames(gamesWithPerf);
+      if (!Array.isArray(gamesData.games)) {
+        console.error("Resposta inválida:", gamesData);
+        throw new Error("Formato inválido de jogos");
+      }
+
+      // ✅ NÃO recalcula performance aqui
+      setGames(gamesData.games);
 
       setState("done");
     } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : "Erro desconhecido");
+      console.error("Analyze error:", err);
+
+      setErrorMsg(err instanceof Error ? err.message : "Erro inesperado");
       setState("error");
     }
+  }
+
+  async function searchGames(query: string) {
+    if (!specs) return;
+    setSearchLoading(true);
+    setSearchQuery(query);
+    setSearchedGames([]);
+
+    try {
+      const res = await fetch("/api/search-game", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query, specs }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSearchedGames(data.games);
+      } else {
+        setSearchedGames([]);
+        console.error("Search error:", data.error);
+      }
+    } catch (err) {
+      console.error("Search error:", err);
+      setSearchedGames([]);
+    } finally {
+      setSearchLoading(false);
+    }
+  }
+
+  function clearSearch() {
+    setSearchedGames([]);
+    setSearchQuery("");
   }
 
   function reset() {
@@ -73,23 +112,38 @@ export function useGameCheck() {
     setGames([]);
     setSpecs(null);
     setFilter("all");
+    setErrorMsg("");
+    clearSearch();
   }
 
+  // 🎯 filtros
   const filteredGames = games.filter(
     (g) => filter === "all" || g.performance === filter,
   );
+
+  // 💎 ordenação inteligente (smooth primeiro)
+  const sortedGames = [...filteredGames].sort((a, b) => {
+    if (a.performance === "smooth" && b.performance !== "smooth") return -1;
+    if (a.performance !== "smooth" && b.performance === "smooth") return 1;
+    return 0;
+  });
 
   return {
     state,
     specs,
     games,
-    filteredGames,
+    filteredGames: sortedGames,
+    searchedGames,
+    searchLoading,
+    searchQuery,
     filter,
     setFilter,
     errorMsg,
     scanStep,
     scanSteps: SCAN_STEPS,
     analyze,
+    searchGames,
+    clearSearch,
     reset,
   };
 }

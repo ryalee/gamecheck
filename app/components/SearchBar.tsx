@@ -1,131 +1,117 @@
-"use client";
+import { Search, X } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { Game } from "../types";
 
-import { useState, useCallback } from "react";
+interface Props {
+  onSearch: (query: string) => void;
+  isLoading?: boolean;
+  suggestions?: Game[];
+  onSuggestionClick?: (game: Game) => void;
+  placeholder?: string;
+}
 
-export default function GameSearch({ specs, games }: any) {
+export default function SearchBar({
+  onSearch,
+  isLoading = false,
+  placeholder = "Buscar jogo específico (ex: GTA V)...",
+}: Props) {
   const [query, setQuery] = useState("");
-  const [result, setResult] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  // Otimizado: uso de useCallback para evitar recriações desnecessárias
-  const handleSearch = useCallback(async () => {
-    if (!query.trim()) return;
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
-    const searchTerm = query.toLowerCase().trim();
-
-    // tenta encontrar nos jogos já analisados (busca otimizada)
-    const existing = games.find((g: any) =>
-      g.title.toLowerCase().includes(searchTerm),
-    );
-
-    if (existing) {
-      setResult({
-        title: existing.title,
-        performance: existing.performance,
-        reason: existing.performanceNote,
-        fpsEstimate: existing.performance === "smooth" ? "60fps+" : "30-60fps",
-        coverUrl: existing.coverUrl || null,
-        source: "local",
-      });
-
-      return;
-    }
-
-    // fallback pra IA
-    setLoading(true);
-
-    try {
-      const res = await fetch("/api/search-game", {
-        method: "POST",
-        body: JSON.stringify({ title: query, specs }),
-      });
-
-      const data = await res.json();
-
-      setResult({
-        ...data,
-        source: "ai",
-      });
-    } catch (error) {
-      console.error("Erro na busca:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [query, specs, games]);
-
-  // Handler para tecla Enter
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleSearch();
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (query.trim()) {
+      onSearch(query.trim());
     }
   };
 
+  const clearSearch = () => {
+    setQuery("");
+    inputRef.current?.focus();
+    setShowSuggestions(false);
+  };
+
+  const handleSuggestionClick = useCallback(
+    (game: Game) => {
+      setQuery(game.title);
+      setShowSuggestions(false);
+      onSearch(game.title);
+    },
+    [onSearch],
+  );
+
+  // ESC para limpar
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && focused) {
+        clearSearch();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [focused]);
+
   return (
-    <div className="mb-8">
-      <div className="flex flex-col gap-2">
-        <div className="flex gap-2 w-[90%] self-center mx-auto">
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Digite um jogo..."
-            className="flex-1 p-4 bg-surface border border-border rounded-lg focus:outline-0"
-          />
+    <form onSubmit={handleSubmit} className="relative w-full max-w-md mx-auto">
+      <div
+        className={`relative flex w-full ${focused ? "ring-2 ring-accent ring-opacity-50" : ""}`}
+      >
+        <Search
+          size={18}
+          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none"
+        />
 
+        <input
+          ref={inputRef}
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setShowSuggestions(true);
+          }}
+          onFocus={() => setFocused(true)}
+          onBlur={(e) => {
+            setTimeout(() => setShowSuggestions(false), 200);
+          }}
+          placeholder={placeholder}
+          className="w-full rounded-lg border border-border bg-surface px-10 py-3 pr-12 text-fg placeholder:text-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent focus:ring-opacity-30 transition-all text-base"
+          disabled={isLoading}
+        />
+
+        {query && !isLoading && (
           <button
-            onClick={handleSearch}
-            className="bg-accent px-4 rounded-lg cursor-pointer hover:bg-accent-hover transition-all duration-300"
+            type="button"
+            onClick={clearSearch}
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted hover:text-fg transition-colors"
           >
-            Buscar
+            <X size={16} />
           </button>
+        )}
 
-          {query && (
-            <button
-              onClick={() => {
-                setQuery("");
-                setResult(null);
-              }}
-              className="bg-surface border border-border px-4 rounded-lg cursor-pointer hover:bg-border transition-all duration-300"
-              title="Limpar busca"
-            >
-              ✕
-            </button>
+        <button
+          type="submit"
+          disabled={!query.trim() || isLoading}
+          className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95 disabled:hover:scale-100"
+        >
+          {isLoading ? (
+            <div className="spin-ring h-4 w-4 border-2 border-accent border-t-transparent rounded-full" />
+          ) : (
+            <Search size={16} className="text-accent" />
           )}
-        </div>
-
-        <p className="text-sm text-muted mx-20 font-semibold">
-          Lembrando: podem ocorrer inúmeras variações, principalmente em casos de GPU integrada.
-        </p>
+        </button>
       </div>
 
-      {loading && <p className="mt-2 text-sm flex mx-auto w-[60%]">Analisando...</p>}
-
-      {result && (
-        <div className="mt-4 p-4 border border-border rounded-lg bg-surface w-[60%] mx-auto flex gap-4">
-          {result.coverUrl && (
-            <img
-              src={result.coverUrl}
-              alt={result.title}
-              className="w-24 h-32 object-cover rounded-lg"
-            />
-          )}
-          <div className="flex-1">
-            <h3 className="font-bold">{result.title}</h3>
-
-            <p>
-              Performance:{" "}
-              {result.performance === "smooth"
-                ? "🟢 Liso"
-                : result.performance === "limited"
-                  ? "🟠 Limitado"
-                  : "🔴 Nem tente"}
-            </p>
-
-            <p>{result.reason}</p>
-            <p className="text-sm text-muted">{result.fpsEstimate}</p>
-          </div>
-        </div>
+      {showSuggestions && query.length > 2 && (
+        <p className="absolute top-full left-0 right-0 mt-1 text-xs text-muted italic bg-surface p-2 rounded-b-lg">
+          Digite mais para sugestões...
+        </p>
       )}
-    </div>
+
+      <p className="mt-1 text-xs text-muted text-center">
+        Analisa se roda no seu PC com base nos requisitos mínimos
+      </p>
+    </form>
   );
 }

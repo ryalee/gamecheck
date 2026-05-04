@@ -3,7 +3,7 @@ export interface Specs {
   ram: { total: number };
   gpu: { model: string; vram: number };
   os: { platform: string; distro: string };
-  disk: { totalGB: number };
+  disk: { totalGB: number; type: "SSD" | "HD" };
 }
 
 export interface Game {
@@ -16,11 +16,11 @@ export interface Game {
   coverColor: string;
   storeUrl: string;
   coverUrl: string;
-  performance: 'smooth' | 'limited';
+  performance: "smooth" | "limited" | "unplayable";
   performanceNote: string;
   tags: string[];
   minReqs: { cpu: string; ram: number; gpu: string; vram: number };
 }
 
-export type AppState = 'idle' | 'scanning' | 'loading' | 'done' | 'error';
-export type FilterType = 'all' | 'smooth' | 'limited';
+export type AppState = "idle" | "scanning" | "loading" | "done" | "error";
+export type FilterType = "all" | "smooth" | "limited";

@@ -22,7 +22,7 @@ export default function Header({
             height={50}
             className="w-auto h-auto"
           />
-          <p className="text-xl">Tá Rodando?</p>
+          <p className="text-xl">Tá Rodando</p>
         </div>
 
         {showActions && (

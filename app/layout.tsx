@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Ta Rodando?',
+  title: 'Ta Rodando',
   description: 'Descubra quais jogos rodam no seu computador com base nas suas configurações',
 };
 
