@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getIgdbToken } from "../../lib/igdb-token";
+import {
+  GAME_CORRECTIONS,
+  getCorrectedQuery,
+} from "../../lib/game-corrections";
 import type { Specs } from "../../types";
 import { calculatePerformance } from "../../lib/performance";
 
@@ -21,6 +25,12 @@ export async function POST(request: NextRequest) {
 
     const token = await getIgdbToken();
 
+    // Fuzzy correction
+    const searchTerms = getCorrectedQuery(query);
+    const igdbQuery = searchTerms
+      .map((term) => `"${term.replace(/"/g, '\\"')}"`)
+      .join(" OR ");
+
     // Busca IGDB simplificada (como api/cover)
     const igdbRes = await fetch("https://api.igdb.com/v4/games", {
       method: "POST",
@@ -29,7 +39,7 @@ export async function POST(request: NextRequest) {
         Authorization: `Bearer ${token}`,
         "Content-Type": "text/plain",
       },
-      body: `search "${query.replace(/"/g, '\\"')}"; fields name, summary, cover.image_id, release_dates.date, genres.name, involved_companies.company.name; limit 5;`,
+      body: `search ${igdbQuery}; fields name, summary, cover.image_id, release_dates.date, genres.name, involved_companies.company.name; limit 5;`,
     });
 
     const igdbData = await igdbRes.json();

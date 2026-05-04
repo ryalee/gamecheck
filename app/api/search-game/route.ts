@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { GAME_CORRECTIONS } from "../../lib/game-corrections";
 import type { Specs } from "../../types";
 
 interface RequestBody {
@@ -18,12 +19,14 @@ export async function POST(request: NextRequest) {
     }
 
     const lowerQuery = query.toLowerCase();
+    const correctedQuery = GAME_CORRECTIONS[lowerQuery] || query;
 
-    // Requisitos MÍNIMOS reais (pesquisados)
+    // Requisitos MÍNIMOS reais (pesquisados) - extended with fuzzy
     const gameReqs: Record<
       string,
       { cpu: string; ram: number; gpu: string; vram: number; heavy?: boolean }
     > = {
+      minecraft: { cpu: "i3", ram: 4, gpu: "Intel HD", vram: 512 },
       minecraft: { cpu: "i3", ram: 4, gpu: "Intel HD", vram: 512 },
       terraria: { cpu: "Core2", ram: 2, gpu: "Shader1.1", vram: 256 },
       "gta v": {
@@ -33,7 +36,23 @@ export async function POST(request: NextRequest) {
         vram: 2048,
         heavy: true,
       },
+      "gta 5": {
+        cpu: "i5-3470",
+        ram: 8,
+        gpu: "GTX660",
+        vram: 2048,
+        heavy: true,
+      },
+      "gta vi": { cpu: "i7", ram: 16, gpu: "RTX3070", vram: 8192, heavy: true },
+      "gta 6": { cpu: "i7", ram: 16, gpu: "RTX3070", vram: 8192, heavy: true },
       rdr2: {
+        cpu: "i5-2500K",
+        ram: 12,
+        gpu: "GTX770",
+        vram: 2048,
+        heavy: true,
+      },
+      "red dead 2": {
         cpu: "i5-2500K",
         ram: 12,
         gpu: "GTX770",
@@ -47,8 +66,18 @@ export async function POST(request: NextRequest) {
         vram: 6144,
         heavy: true,
       },
+      "cyberpunk 2077": {
+        cpu: "i7-4790",
+        ram: 12,
+        gpu: "GTX1060",
+        vram: 6144,
+        heavy: true,
+      },
       csgo: { cpu: "Core2 E6600", ram: 2, gpu: "256MB", vram: 256 },
+      "cs 2": { cpu: "Core2 E6600", ram: 2, gpu: "256MB", vram: 256 },
+      cs: { cpu: "Core2 E6600", ram: 2, gpu: "256MB", vram: 256 },
       dota2: { cpu: "Dual2.8GHz", ram: 4, gpu: "DX9", vram: 512 },
+      dota: { cpu: "Dual2.8GHz", ram: 4, gpu: "DX9", vram: 512 },
       portal2: { cpu: "Core2 E6600", ram: 2, gpu: "DX9", vram: 512 },
       factorio: { cpu: "Quad3GHz", ram: 8, gpu: "DX10", vram: 1024 },
       gtasa: { cpu: "PentiumIII", ram: 1, gpu: "64MB", vram: 64 },
@@ -93,10 +122,10 @@ export async function POST(request: NextRequest) {
     const resultGame = [
       {
         id: "precise_" + Date.now(),
-        title: query.charAt(0).toUpperCase() + query.slice(1),
+        title: correctedQuery.charAt(0).toUpperCase() + correctedQuery.slice(1),
         genre: "Análise PC",
         year: new Date().getFullYear(),
-        description: `Compatibilidade precisa para "${query}". Sua config: ${specs.cpu.brand} ${specs.ram.total}GB RAM ${specs.gpu.model} ${specs.gpu.vram}MB VRAM.`,
+        description: `Compatibilidade precisa para "${query}" (${correctedQuery}). Sua config: ${specs.cpu.brand} ${specs.ram.total}GB RAM ${specs.gpu.model} ${specs.gpu.vram}MB VRAM.`,
         developer: "BLACKBOXAI Analysis",
         coverColor:
           performance === "smooth"
@@ -110,8 +139,8 @@ export async function POST(request: NextRequest) {
         tags: [performance.toUpperCase()],
         minReqs: reqs,
         stores: {
-          steam: `https://store.steampowered.com/search/?term=${encodeURIComponent(query)}`,
-          nuuvem: `https://www.nuuvem.com/br-pt/catalog/search/${encodeURIComponent(query)}`,
+          steam: `https://store.steampowered.com/search/?term=${encodeURIComponent(correctedQuery)}`,
+          nuuvem: `https://www.nuuvem.com/br-pt/catalog/search/${encodeURIComponent(correctedQuery)}`,
         },
       },
     ];
