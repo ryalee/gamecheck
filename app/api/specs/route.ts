@@ -16,8 +16,8 @@ export async function GET() {
     const isSSD =
       firstDisk &&
       (firstDisk.type === "SSD" ||
-        firstDisk.driver?.toLowerCase().includes("nvme") ||
-        firstDisk.driver?.toLowerCase().includes("solid"));
+        (firstDisk as any).driver?.toLowerCase().includes("nvme") ||
+        (firstDisk as any).driver?.toLowerCase().includes("solid"));
     const storageType = isSSD ? "SSD" : "HD";
 
     const gpus = graphics.controllers.map((g) => ({

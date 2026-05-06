@@ -37,6 +37,18 @@ export const GAME_CORRECTIONS: Record<string, string> = {
   bg3: "Baldur's Gate 3",
 };
 
+export const FRANCHISES: Record<string, string> = {
+  gta: "Grand Theft Auto",
+  "grand theft auto": "Grand Theft Auto",
+  "assassins creed": "Assassin's Creed",
+  assassin: "Assassin's Creed",
+  witcher: "The Witcher",
+  "final fantasy": "Final Fantasy",
+  "call of duty": "Call of Duty",
+  cod: "Call of Duty",
+  "resident evil": "Resident Evil",
+};
+
 export function getCorrectedQuery(query: string): string[] {
   const lowerQuery = query.toLowerCase().trim();
 
@@ -57,4 +69,15 @@ export function getCorrectedQuery(query: string): string[] {
 
   // Remove duplicates and empty
   return [...new Set(variants)].filter(Boolean);
+}
+
+export function isFranchiseQuery(query: string): {
+  isFranchise: boolean;
+  name: string;
+} {
+  const lowerQuery = query.toLowerCase().trim();
+  if (FRANCHISES[lowerQuery]) {
+    return { isFranchise: true, name: FRANCHISES[lowerQuery] };
+  }
+  return { isFranchise: false, name: "" };
 }

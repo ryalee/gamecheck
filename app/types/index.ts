@@ -14,7 +14,13 @@ export interface Game {
   description: string;
   developer: string;
   coverColor: string;
-  storeUrl: string;
+  storeUrl?: string;
+  stores?: {
+    steam?: string;
+    nuuvem?: string;
+    epic?: string;
+    gog?: string;
+  };
   coverUrl: string;
   performance: "smooth" | "limited" | "unplayable";
   performanceNote: string;

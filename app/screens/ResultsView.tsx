@@ -49,31 +49,44 @@ export default function ResultsView({
     <div className="flex flex-col gap-6 pt-8">
       {/* especificações */}
       <div className="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] w-[90%] gap-2 mx-auto">
+        <span>
         <SpecCard
           icon={<Cpu size={13} />}
           label="Processador"
           value={specs.cpu.brand.replace(/\(R\)|\(TM\)/g, "").trim()}
         />
-        <SpecCard
-          icon={<MemoryStick size={13} />}
-          label="RAM"
-          value={`${specs.ram.total} GB`}
-        />
-        <SpecCard
-          icon={<Monitor size={13} />}
-          label="GPU"
-          value={specs.gpu.model || "Integrada"}
-        />
-        <SpecCard
-          icon={<HardDrive size={13} />}
-          label="Armazenamento"
-          value={`${specs.disk.totalGB} GB ${specs.disk.type || "HD"}`}
-        />
+        </span>
+        
+        <span>
+          <SpecCard
+            icon={<MemoryStick size={13} />}
+            label="RAM"
+            value={`${specs.ram.total} GB`}
+          />
+        </span>
+
+        <span>
+          <SpecCard
+            icon={<Monitor size={13} />}
+            label="GPU"
+            value={specs.gpu.model || "Integrada"}
+          />
+
+          <p className="mt-1 text-[11px] text-muted text-center">⚠️ O resultado pode ser impreciso em caso de placa integrada</p>
+        </span>
+        
+        <span>
+          <SpecCard
+            icon={<HardDrive size={13} />}
+            label="Armazenamento"
+            value={`${specs.disk.totalGB} GB ${specs.disk.type || "HD"}`}
+          />
+        </span>
       </div>
 
-      {/* Busca manual */}
+      {/* busca manual */}
       {specs && (
-        <div className="max-w-2xl mx-auto px-6">
+        <div className="w-full mx-auto px-6">
           <SearchBar onSearch={onSearch} isLoading={searchLoading} />
           {searchQuery && !searchLoading && (
             <button
@@ -91,7 +104,7 @@ export default function ResultsView({
         <div className="w-[95%] mx-auto">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">
-              🔍 "{searchQuery}" no seu PC
+              🔍 Será que "{searchQuery}" roda no seu PC?
             </h2>
             <button
               onClick={onClearSearch}
@@ -143,7 +156,7 @@ export default function ResultsView({
         {smoothGames.length > 0 && (
           <div>
             <h2 className="text-lg font-semibold mb-4">
-              🚀 Roda liso no seu PC
+              🟢 Roda liso no seu PC
             </h2>
 
             <div className="grid grid-cols-4 gap-10 place-items-center">
