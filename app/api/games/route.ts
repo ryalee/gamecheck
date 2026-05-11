@@ -42,8 +42,13 @@ export async function POST(request: NextRequest) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+          Authorization: `Bearer ${(() => {
+            const v = process.env.GROQ_API_KEY;
+            if (!v) throw new Error("Missing GROQ_API_KEY env var");
+            return v;
+          })()}`,
         },
+
         body: JSON.stringify({
           model: "llama-3.1-8b-instant",
           max_tokens: 4000,
@@ -80,19 +85,21 @@ export async function POST(request: NextRequest) {
 
     const games = JSON.parse(jsonMatch[0]);
 
-    const gamesWithStore = games.map((game: any) => {
-      const title = game.title;
+    const gamesWithStore = games.map(
+      (game: { title: string; [key: string]: unknown }) => {
+        const title = game.title;
 
-      return {
-        ...game,
-        stores: {
-          nuuvem: `https://www.nuuvem.com/br-pt/catalog/search/${encodeURIComponent(title)}`,
-          steam: `https://store.steampowered.com/search/?term=${encodeURIComponent(title)}`,
-          epic: `https://store.epicgames.com/pt-BR/browse?q=${encodeURIComponent(title)}`,
-          gog: `https://www.gog.com/en/games?query=${encodeURIComponent(title)}`,
-        },
-      };
-    });
+        return {
+          ...game,
+          stores: {
+            nuuvem: `https://www.nuuvem.com/br-pt/catalog/search/${encodeURIComponent(title)}`,
+            steam: `https://store.steampowered.com/search/?term=${encodeURIComponent(title)}`,
+            epic: `https://store.epicgames.com/pt-BR/browse?q=${encodeURIComponent(title)}`,
+            gog: `https://www.gog.com/en/games?query=${encodeURIComponent(title)}`,
+          },
+        };
+      },
+    );
 
     return NextResponse.json({ success: true, games: gamesWithStore });
   } catch (error) {

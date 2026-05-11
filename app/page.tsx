@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useGameCheck } from "./hooks/useGameCheck";
 import Header from "./components/Header";
 import LandingView from "./screens/LandingView";
@@ -40,6 +39,7 @@ export default function Page() {
             onFilterChange={gc.setFilter}
             onSearch={gc.searchGames}
             onClearSearch={gc.clearSearch}
+            searchError={gc.searchError}
           />
         )}
       </div>

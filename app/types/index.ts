@@ -29,4 +29,4 @@ export interface Game {
 }
 
 export type AppState = "idle" | "scanning" | "loading" | "done" | "error";
-export type FilterType = "all" | "smooth" | "limited";
+export type FilterType = "all" | "smooth" | "limited" | "unplayable";

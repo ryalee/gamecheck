@@ -1,4 +1,3 @@
-import { Star } from "lucide-react";
 import { Game } from "../types";
 import GameCover from "./GameCover";
 
@@ -9,11 +8,12 @@ interface Props {
 
 export default function GameCard({ game, onClick }: Props) {
   const isSmooth = game.performance === "smooth";
+  const isUnplayable = game.performance === "unplayable";
 
   return (
     <div
       onClick={() => onClick(game)}
-      className="card-hover flex flex-col overflow-hidden rounded-xl border border-border bg-surface w-[80%] cursor-pointer"
+      className="card-hover flex h-full flex-col overflow-hidden rounded-xl border border-border bg-surface cursor-pointer"
     >
       <GameCover game={game} />
 
@@ -42,10 +42,12 @@ export default function GameCard({ game, onClick }: Props) {
           ${
             isSmooth
               ? "border-green-500/15 bg-green-500/8 text-smooth"
-              : "border-amber-500/15 bg-amber-500/8 text-limited"
+              : isUnplayable
+                ? "border-red-500/20 bg-red-500/10 text-red-300"
+                : "border-amber-500/15 bg-amber-500/8 text-limited"
           }`}
         >
-          <span>{isSmooth ? "🟢" : "🟠"}</span>
+          <span>{isSmooth ? "🟢" : isUnplayable ? "🔴" : "🟠"}</span>
           <span>{game.performanceNote}</span>
         </div>
 

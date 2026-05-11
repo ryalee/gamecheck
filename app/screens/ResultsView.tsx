@@ -14,6 +14,8 @@ interface Props {
   searchedGames: Game[];
   searchLoading: boolean;
   searchQuery: string;
+
+  searchError: string;
   filter: FilterType;
   onFilterChange: (f: FilterType) => void;
   onSearch: (query: string) => void;
@@ -24,6 +26,7 @@ const FILTERS: { value: FilterType; label: string }[] = [
   { value: "all", label: "Todos" },
   { value: "smooth", label: "🟢 Liso" },
   { value: "limited", label: "🟠 Limitado" },
+  { value: "unplayable", label: "🔴 Não roda" },
 ];
 
 export default function ResultsView({
@@ -33,6 +36,8 @@ export default function ResultsView({
   searchedGames,
   searchLoading,
   searchQuery,
+
+  searchError,
   filter,
   onFilterChange,
   onSearch,
@@ -44,19 +49,22 @@ export default function ResultsView({
   const smoothGames = filteredGames.filter((g) => g.performance === "smooth");
 
   const limitedGames = filteredGames.filter((g) => g.performance === "limited");
+  const unplayableGames = filteredGames.filter(
+    (g) => g.performance === "unplayable",
+  );
 
   return (
-    <div className="flex flex-col gap-6 pt-8">
+    <div className="flex flex-col gap-6 pt-8 w-[95%] mx-auto">
       {/* especificações */}
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] w-[90%] gap-2 mx-auto">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] w-full gap-2 mx-auto">
         <span>
-        <SpecCard
-          icon={<Cpu size={13} />}
-          label="Processador"
-          value={specs.cpu.brand.replace(/\(R\)|\(TM\)/g, "").trim()}
-        />
+          <SpecCard
+            icon={<Cpu size={13} />}
+            label="Processador"
+            value={specs.cpu.brand.replace(/\(R\)|\(TM\)/g, "").trim()}
+          />
         </span>
-        
+
         <span>
           <SpecCard
             icon={<MemoryStick size={13} />}
@@ -72,9 +80,11 @@ export default function ResultsView({
             value={specs.gpu.model || "Integrada"}
           />
 
-          <p className="mt-1 text-[11px] text-muted text-center">⚠️ O resultado pode ser impreciso em caso de placa integrada</p>
+          <p className="mt-1 text-[11px] text-muted text-center">
+            ⚠️ O resultado pode ser impreciso em caso de placa integrada
+          </p>
         </span>
-        
+
         <span>
           <SpecCard
             icon={<HardDrive size={13} />}
@@ -87,7 +97,8 @@ export default function ResultsView({
       {/* busca manual */}
       {specs && (
         <div className="w-full mx-auto px-6">
-          <SearchBar onSearch={onSearch} isLoading={searchLoading} />
+          <SearchBar onSearch={onSearch} isLoading={searchLoading}/>
+
           {searchQuery && !searchLoading && (
             <button
               onClick={onClearSearch}
@@ -95,6 +106,11 @@ export default function ResultsView({
             >
               Limpar busca
             </button>
+          )}
+          {searchError && (
+            <p className="mt-2 text-center text-xs text-limited">
+              {searchError}
+            </p>
           )}
         </div>
       )}
@@ -104,7 +120,8 @@ export default function ResultsView({
         <div className="w-[95%] mx-auto">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">
-              🔍 Será que "{searchQuery}" roda no seu PC?
+              🔍 Será que <span className="text-accent">{searchQuery}</span>{" "}
+              roda no seu PC?
             </h2>
             <button
               onClick={onClearSearch}
@@ -113,7 +130,7 @@ export default function ResultsView({
               Fechar
             </button>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 place-items-center">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 place-items-stretch">
             {searchedGames.map((game, index) => (
               <GameCard
                 key={`${game.id || game.title}-${index}`}
@@ -152,14 +169,15 @@ export default function ResultsView({
         </div>
       </div>
 
-      <div className="w-[95%] mx-auto flex flex-col gap-10">
+      {/* grid de jogos */}
+      <div className="mx-auto flex flex-col gap-10">
         {smoothGames.length > 0 && (
           <div>
             <h2 className="text-lg font-semibold mb-4">
               🟢 Roda liso no seu PC
             </h2>
 
-            <div className="grid grid-cols-4 gap-10 place-items-center">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 place-items-stretch">
               {smoothGames.map((game, index) => (
                 <GameCard
                   key={`${game.id || game.title}-${index}`}
@@ -177,7 +195,7 @@ export default function ResultsView({
               ⚠️ Roda, mas com limitações
             </h2>
 
-            <div className="grid grid-cols-4 gap-10 place-items-center opacity-80">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 place-items-stretch opacity-85">
               {limitedGames.map((game, index) => (
                 <GameCard
                   key={`${game.id || game.title}-${index}`}
@@ -188,6 +206,26 @@ export default function ResultsView({
             </div>
           </div>
         )}
+
+        {filter !== "smooth" &&
+          filter !== "limited" &&
+          unplayableGames.length > 0 && (
+            <div>
+              <h2 className="text-lg font-semibold mb-4 opacity-80">
+                🔴 Não roda bem no seu PC
+              </h2>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 place-items-stretch opacity-70">
+                {unplayableGames.map((game, index) => (
+                  <GameCard
+                    key={`${game.id || game.title}-${index}`}
+                    game={game}
+                    onClick={setSelectedGame}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
       </div>
 
       {/* modal */}

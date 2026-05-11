@@ -1,6 +1,5 @@
 import { Search, X } from "lucide-react";
-import { useState, useRef, useEffect, useCallback } from "react";
-import { Game } from "../types";
+import { useEffect, useRef, useState } from "react";
 
 interface Props {
   onSearch: (query: string) => void;
@@ -16,11 +15,13 @@ export default function SearchBar({
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLFormElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (query.trim()) {
-      onSearch(query.trim());
+    const trimmed = query.trim();
+    if (trimmed.length >= 3) {
+      onSearch(trimmed);
     }
   };
 
@@ -41,7 +42,11 @@ export default function SearchBar({
   }, [focused]);
 
   return (
-    <form onSubmit={handleSubmit} className="relative w-full max-w-md mx-auto">
+    <form
+      ref={containerRef}
+      onSubmit={handleSubmit}
+      className="relative w-full mx-auto"
+    >
       <div
         className={`relative flex ${focused ? "ring-2 ring-accent ring-opacity-50" : ""}`}
       >
@@ -57,6 +62,14 @@ export default function SearchBar({
             setQuery(e.target.value);
           }}
           onFocus={() => setFocused(true)}
+          onBlur={(e) => {
+            // não fechar quando o blur for causado por clique nas sugestões
+            const next = e.relatedTarget as Node | null;
+            const container =
+              (containerRef.current as unknown as Node | null) ?? null;
+            if (container && next && container.contains(next)) return;
+            setFocused(false);
+          }}
           placeholder={placeholder}
           className="w-full rounded-lg border border-border bg-surface px-10 py-3 pr-12 text-fg placeholder:text-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent focus:ring-opacity-30 transition-all text-base"
           disabled={isLoading}
@@ -72,11 +85,6 @@ export default function SearchBar({
           </button>
         )}
       </div>
-
-      <p className="mt-1 text-xs text-muted text-center">
-        Digite o nome do jogo corretamente para obter resultados precisos. Ex:
-        "The Witcher 3", "Cyberpunk 2077", "GTA V"...
-      </p>
     </form>
   );
 }

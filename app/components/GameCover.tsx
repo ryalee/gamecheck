@@ -112,23 +112,28 @@ export default function GameCover({ game }: Props) {
   const pattern = PATTERNS[hash % PATTERNS.length];
   const accentHue = (hash * 37) % 360;
 
-  const [cover, setCover] = useState<string | null>(null);
+  const [fetchedCover, setFetchedCover] = useState<string | null>(null);
+  const cover = game.coverUrl || fetchedCover;
 
   useEffect(() => {
+    if (game.coverUrl) {
+      return;
+    }
+
     async function fetchCover() {
       try {
         const res = await fetch(
           `/api/cover?title=${encodeURIComponent(game.title)}`,
         );
         const data = await res.json();
-        setCover(data.coverUrl);
+        setFetchedCover(data.coverUrl);
       } catch {
-        setCover(null);
+        setFetchedCover(null);
       }
     }
 
     fetchCover();
-  }, [game.title]);
+  }, [game.title, game.coverUrl]);
 
   return (
     <div className="game-cover" style={{ background: game.coverColor }}>

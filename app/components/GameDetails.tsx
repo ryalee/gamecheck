@@ -1,4 +1,3 @@
-import { div } from "framer-motion/client";
 import { Game } from "../types";
 
 interface Props {
@@ -51,7 +50,9 @@ export default function GameDetails({ game, onClose }: Props) {
             className={`px-3 py-1 text-xs rounded-full ${
               game.performance === "smooth"
                 ? "bg-green-500/20 text-green-400"
-                : "bg-yellow-500/20 text-yellow-400"
+                : game.performance === "unplayable"
+                  ? "bg-red-500/20 text-red-400"
+                  : "bg-yellow-500/20 text-yellow-400"
             }`}
           >
             {game.performanceNote}
@@ -70,11 +71,12 @@ export default function GameDetails({ game, onClose }: Props) {
         {/* botão */}
         {game.stores && (
           <div className="flex flex-col items-center">
-            <div className="flex gap-2 justify-center text-center w-full">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 justify-center text-center w-full">
               <a
                 href={game.stores.nuuvem}
                 target="_blank"
-                className="bg-[#089fcf] p-3 font-semibold w-[35%] items-center gap-2 rounded-md flex"
+                rel="noreferrer"
+                className="bg-[#089fcf] p-3 font-semibold items-center gap-2 rounded-md flex"
               >
                 <img src="/nuuvem.webp" alt="ver na Nuuvem" className="w-12.5 h-12.5"/>
                 <p className="text-sm">Ver na Nuuvem</p>
@@ -83,7 +85,8 @@ export default function GameDetails({ game, onClose }: Props) {
               <a
                 href={game.stores.steam}
                 target="_blank"
-                className="bg-[#1f2941] p-3 font-semibold w-[35%] items-center gap-2 rounded-md flex"
+                rel="noreferrer"
+                className="bg-[#1f2941] p-3 font-semibold items-center gap-2 rounded-md flex"
               >
                 <img src="/steam.webp" alt="ver na Steam" className="w-12.5 h-12.5"/>
                 <p className="text-sm">Ver na Steam</p>
@@ -92,7 +95,8 @@ export default function GameDetails({ game, onClose }: Props) {
               <a
                 href={game.stores.epic}
                 target="_blank"
-                className="bg-[#363435] p-2 font-semibold w-[35%] items-center gap-2 rounded-md flex"
+                rel="noreferrer"
+                className="bg-[#363435] p-2 font-semibold items-center gap-2 rounded-md flex"
               >
                 <img src="/epic-games.webp" alt="ver na Epic Games" className="w-12.5 h-12.5"/>
                 <p className="text-sm">Ver na Epic Games</p>

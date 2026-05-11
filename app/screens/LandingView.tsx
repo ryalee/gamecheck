@@ -39,7 +39,7 @@ export default function LandingView({ onAnalyze }: Props) {
 
       {/* Hints */}
       <div className="mt-2 flex flex-wrap justify-center gap-5">
-        {['🟢 Roda em ultra', '🟠 Roda com limitações', '⭐ Salve sua lista'].map((hint) => (
+        {['🟢 Roda em ultra', '🟠 Roda com limitações', '🛒 Veja nas melhores lojas com apenas um clique'].map((hint) => (
           <span key={hint} className="text-xs text-muted">{hint}</span>
         ))}
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { AppState, FilterType, Game, Specs } from "../types";
 
 const SCAN_STEPS = [
@@ -20,7 +20,10 @@ export function useGameCheck() {
   const [scanStep, setScanStep] = useState(0);
   const [searchedGames, setSearchedGames] = useState<Game[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
+
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchError, setSearchError] = useState("");
+  const searchAbortRef = useRef<AbortController | null>(null);
 
   async function analyze() {
     setState("scanning");
@@ -77,34 +80,65 @@ export function useGameCheck() {
 
   async function searchGames(query: string) {
     if (!specs) return;
+    const trimmedQuery = query.trim();
+    if (!trimmedQuery || trimmedQuery.length < 3) {
+      setSearchError("Digite pelo menos 3 letras para buscar.");
+      setSearchQuery(trimmedQuery);
+      setSearchedGames([]);
+      return;
+    }
+
+    searchAbortRef.current?.abort();
+    const controller = new AbortController();
+    searchAbortRef.current = controller;
+
     setSearchLoading(true);
-    setSearchQuery(query);
+    setSearchError("");
+    setSearchQuery(trimmedQuery);
     setSearchedGames([]);
 
     try {
       const res = await fetch("/api/search-game", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query, specs }),
+        body: JSON.stringify({ query: trimmedQuery, specs }),
+        signal: controller.signal,
       });
+
+      if (!res.ok) {
+        throw new Error("Falha ao buscar jogo no servidor.");
+      }
+
       const data = await res.json();
       if (data.success) {
         setSearchedGames(data.games);
+        if (!data.games?.length) {
+          setSearchError("Nenhum resultado encontrado para essa busca.");
+        }
       } else {
         setSearchedGames([]);
+        setSearchError(data.error || "Não foi possível concluir a busca.");
         console.error("Search error:", data.error);
       }
     } catch (err) {
+      if ((err as Error).name === "AbortError") {
+        return;
+      }
       console.error("Search error:", err);
       setSearchedGames([]);
+      setSearchError("Erro inesperado ao buscar jogo. Tente novamente.");
     } finally {
       setSearchLoading(false);
+      searchAbortRef.current = null;
     }
   }
 
   function clearSearch() {
     setSearchedGames([]);
     setSearchQuery("");
+    setSearchError("");
+    searchAbortRef.current?.abort();
+    searchAbortRef.current = null;
   }
 
   function reset() {
@@ -135,7 +169,9 @@ export function useGameCheck() {
     filteredGames: sortedGames,
     searchedGames,
     searchLoading,
+
     searchQuery,
+    searchError,
     filter,
     setFilter,
     errorMsg,
@@ -143,6 +179,7 @@ export function useGameCheck() {
     scanSteps: SCAN_STEPS,
     analyze,
     searchGames,
+
     clearSearch,
     reset,
   };

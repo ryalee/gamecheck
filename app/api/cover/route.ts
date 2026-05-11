@@ -19,15 +19,23 @@ export async function GET(req: NextRequest) {
     const igdbRes = await fetch("https://api.igdb.com/v4/games", {
       method: "POST",
       headers: {
-        "Client-ID": process.env.TWITCH_CLIENT_ID!,
+        "Client-ID": (() => {
+          const v = process.env.TWITCH_CLIENT_ID;
+          if (!v) throw new Error("Missing TWITCH_CLIENT_ID env var");
+          return v;
+        })(),
         Authorization: `Bearer ${token}`,
         "Content-Type": "text/plain",
       },
+
       body: `search "${title}"; fields name, cover.image_id; limit 5;`,
     });
 
     const data = await igdbRes.json();
-    const game = data.find((g: any) => g.cover) || data[0];
+    const game =
+      data.find(
+        (g: { cover?: { image_id?: string | null } | null }) => g.cover,
+      ) || data[0];
 
     if (!game?.cover) {
       coverCache.set(title, null);

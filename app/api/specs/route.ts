@@ -13,11 +13,17 @@ export async function GET() {
     ]);
 
     const firstDisk = diskLayout[0];
+    const driver =
+      typeof (firstDisk as unknown as { driver?: unknown })?.driver === "string"
+        ? ((firstDisk as unknown as { driver?: unknown }).driver as string)
+        : undefined;
+
     const isSSD =
-      firstDisk &&
+      !!firstDisk &&
       (firstDisk.type === "SSD" ||
-        (firstDisk as any).driver?.toLowerCase().includes("nvme") ||
-        (firstDisk as any).driver?.toLowerCase().includes("solid"));
+        (driver?.toLowerCase().includes("nvme") ?? false) ||
+        (driver?.toLowerCase().includes("solid") ?? false));
+
     const storageType = isSSD ? "SSD" : "HD";
 
     const gpus = graphics.controllers.map((g) => ({
